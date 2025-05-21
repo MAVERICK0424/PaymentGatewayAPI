@@ -6,7 +6,8 @@ namespace PaymentGatewayAPI.Services
 {
     public interface IPaystackService
     {
-        Task<InitializePaymentResponse> InitializePaymentAsync(InitializePaymentRequest request);
+        Task<PaymentResponse?> InitializePaymentAsync(InitializePaymentRequest request);
         Task<PaymentResponse> ProcessPaymentAsync(PaymentDto payment);
+        Task<PaymentResponse> VerifyPaymentAsync(string reference);
     }
 }

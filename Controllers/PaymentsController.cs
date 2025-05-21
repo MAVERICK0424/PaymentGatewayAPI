@@ -27,6 +27,18 @@ namespace PaymentGatewayAPI.Controllers
 
             return Ok(response);
         }
+        [HttpGet("verify/{reference}")]
+        public async Task<IActionResult> VerifyPayment(string reference)
+        {
+            var result = await _paystackService.VerifyPaymentAsync(reference);
+
+            return Ok(new
+            {
+                status = result.Status == "completed" ? "success" : "failed",
+                message = result.Message,
+                data = result
+            });
+        }
 
         // Added route "process" for clarity and testing
         [HttpPost("process")]
