@@ -43,14 +43,40 @@ namespace PaymentGatewayAPI.Services
             });
         }
 
-        public void ProcessPaymentAsync(PaymentDto sampleDto)
+        public async Task<PaymentResponse> ProcessPaymentAsync(PaymentDto payment)
         {
-            throw new NotImplementedException();
-        }
+            var requestData = new
+            {
+                amount = payment.Amount,
+                email = payment.Email,
+                currency = payment.Currency
+            };
 
-        Task<PaymentResponse> IPaystackService.ProcessPaymentAsync(PaymentDto payment)
-        {
-            throw new NotImplementedException();
+            var jsonContent = JsonSerializer.Serialize(requestData);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("/transaction/initialize", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new PaymentResponse
+                {
+                    Status = false,
+                    Message = "Payment initialization failed."
+                };
+            }
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            var paymentResponse = JsonSerializer.Deserialize<PaymentResponse>(responseString, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return paymentResponse ?? new PaymentResponse
+            {
+                Status = false,
+                Message = "Failed to parse payment response."
+            };
         }
     }
 }
