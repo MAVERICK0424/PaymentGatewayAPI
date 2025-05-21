@@ -2,7 +2,6 @@
 using PaymentGatewayAPI;
 using PaymentGatewayAPI.Services;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
@@ -32,5 +31,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Add this to bind to the correct port on Render
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Urls.Add($"http://*:{port}");
+
 app.Run();
+
 public partial class Program { }
