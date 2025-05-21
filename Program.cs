@@ -1,5 +1,6 @@
 ﻿using Microsoft.OpenApi.Models; // 👈 required for Swagger setup
 using PaymentGatewayAPI;
+using PaymentGatewayAPI.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<IPaystackService, PaystackService>();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Payment API", Version = "v1" });
