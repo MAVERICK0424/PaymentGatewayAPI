@@ -1,14 +1,14 @@
-﻿using Microsoft.OpenApi.Models; // 👈 required for Swagger setup
+﻿using Microsoft.OpenApi.Models;
 using PaymentGatewayAPI;
 using PaymentGatewayAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 🔥 Add this: bind app to correct Render port
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://*:{port}");
 
-
-// Add services to the container
+// Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IPaystackService, PaystackService>();
@@ -19,23 +19,18 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+// ✅ Always enable Swagger (for Render)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Payment API V1");
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Payment API V1");
+});
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
-
-// Add this to bind to the correct port on Render
 
 app.Run();
 
