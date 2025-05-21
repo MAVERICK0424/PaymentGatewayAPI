@@ -26,4 +26,4 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Run Tests
-        run: dotnet test PaymentGatewayAPI.Tests/PaymentGatewayAPI.Tests.csproj --no-build --verbosity normal
+        run: dotnet test  --no-build --verbosity normal
