@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PaymentGatewayAPI.Models;
+using PaymentGatewayAPI.Models.Paystack;
 using PaymentGatewayAPI.Services;
+using System.Threading.Tasks;
 
 namespace PaymentGatewayAPI.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/[controller]")]
     public class PaymentsController : ControllerBase
     {
-
-        //private static readonly List<Payment> Payments = new();
         private readonly IPaystackService _paystackService;
 
         public PaymentsController(IPaystackService paystackService)
@@ -17,52 +17,27 @@ namespace PaymentGatewayAPI.Controllers
             _paystackService = paystackService;
         }
 
-        [HttpPost]
-        public IActionResult Post([FromBody] Payment request)
+        [HttpPost("initialize")]
+        public async Task<IActionResult> InitializePayment([FromBody] InitializePaymentRequest request)
         {
-            var paymentId = Guid.NewGuid().ToString();
+            var response = await _paystackService.InitializePaymentAsync(request);
 
-            var result = new
-            {
-                payment = new
-                {
-                    id = paymentId,
-                    customer_name = request.CustomerName,
-                    customer_email = request.CustomerEmail,
-                    amount = request.Amount,
-                    status = "completed"
-                },
-                status = "success",
-                message = "Payment initiated successfully."
-            };
+            if (response == null)
+                return StatusCode(500, "Failed to initialize payment");
 
-            return Ok(result);
+            return Ok(response);
         }
 
-        [HttpGet("{id}")]
-        public IActionResult Get(string id)
-        {
-            return Ok(new
-            {
-                payment = new
-                {
-                    Id = id,
-                    customer_name = "John Doe",
-                    customer_email = "john@example.com",
-                    amount = 50.00,
-                    status = "completed"
-                },
-                status = "success",
-                message = "Payment details retrieved successfully."
-            });
-        }
-
+        // Added route "process" for clarity and testing
         [HttpPost("process")]
         public async Task<IActionResult> ProcessPayment([FromBody] PaymentDto paymentDto)
         {
-            var result = await _paystackService.ProcessPaymentAsync(paymentDto);
-            return Ok(result);
-        }
+            var response = await _paystackService.ProcessPaymentAsync(paymentDto);
 
+            if (response == null)
+                return NotFound("Payment not found or failed");
+
+            return Ok(response);
+        }
     }
 }

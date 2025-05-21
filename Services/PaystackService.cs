@@ -1,18 +1,56 @@
-﻿using PaymentGatewayAPI.Models;
+﻿using Microsoft.Extensions.Configuration;
+using PaymentGatewayAPI.Models;
+using PaymentGatewayAPI.Models.Paystack;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace PaymentGatewayAPI.Services
 {
     public class PaystackService : IPaystackService
     {
-        public async Task<PaymentResponse> ProcessPaymentAsync(PaymentDto paymentDto)
-        {
-            await Task.Delay(100); 
+        private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
 
-            return new PaymentResponse
+        public PaystackService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+            _httpClient = new HttpClient
             {
-                Status = true,
-                Message = "Payment processed successfully."
+                BaseAddress = new System.Uri(_configuration["Paystack:BaseUrl"]!)
             };
+
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _configuration["Paystack:SecretKey"]);
+        }
+
+        public async Task<InitializePaymentResponse?> InitializePaymentAsync(InitializePaymentRequest request)
+        {
+            var jsonContent = JsonSerializer.Serialize(request);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("/transaction/initialize", content);
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<InitializePaymentResponse>(responseString, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        }
+
+        public void ProcessPaymentAsync(PaymentDto sampleDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<PaymentResponse> IPaystackService.ProcessPaymentAsync(PaymentDto payment)
+        {
+            throw new NotImplementedException();
         }
     }
 }
