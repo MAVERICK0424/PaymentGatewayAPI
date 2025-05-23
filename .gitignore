@@ -25,3 +25,4 @@ Thumbs.db
 wwwroot/
 
 # Environment files
+appsettings.Development.json
